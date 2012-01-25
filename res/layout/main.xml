@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/button1">
+        android:layout_toLeftOf="@+id/button1" >
 
         <requestFocus />
     </EditText>
@@ -22,5 +22,12 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:text="@string/go" />
+
+    <ListView
+        android:id="@+id/history_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/editText1" >
+    </ListView>
 
 </RelativeLayout>

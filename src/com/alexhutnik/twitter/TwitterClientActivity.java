@@ -16,28 +16,50 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 
 public class TwitterClientActivity extends Activity {
 	private ProgressDialog progressDialog;
 	private EditText searchEditText;
-
+	private ArrayList<String> searchHistory = new ArrayList<String>();
+	private ListView historyListView;
+	private ArrayAdapter searchHistoryAdapter;
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		//History management
+		historyListView = (ListView) this.findViewById(R.id.history_list);
+		searchHistoryAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, searchHistory);
+		historyListView.setAdapter(searchHistoryAdapter);
+	    historyListView.setTextFilterEnabled(true);
+	    historyListView.setOnItemClickListener(new OnItemClickListener() {
 
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				performSearch(searchHistory.get(arg2));
+			}
+	    	
+		});
+	    
+	    searchEditText = (EditText) findViewById(R.id.editText1);
+	    
 		Button button = (Button) findViewById(R.id.button1);
 		button.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				searchHistoryAdapter.add(searchEditText.getText().toString());
 				performSearch(searchEditText.getText().toString());
 			}
 		});
-		searchEditText = (EditText) findViewById(R.id.editText1);
-	}
-
+	} 
+    
 	private void performSearch(String term) {
 		
     	progressDialog = ProgressDialog.show(TwitterClientActivity.this, "Please wait...", "Retrieving data...", true, true);
