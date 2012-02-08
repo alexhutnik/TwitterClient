@@ -14,7 +14,6 @@ public class TwitterClientSQLHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		// TODO Auto-generated method stub
 		db.execSQL(SQLConstants.SCHEMA.CREATE_TWEETS);
 		db.execSQL(SQLConstants.SCHEMA.CREATE_SEARCH_HISTORY);
 		db.execSQL(SQLConstants.SCHEMA.CREATE_TWEETXSEARCH);

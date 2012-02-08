@@ -24,7 +24,7 @@
         android:text="@string/go" />
 
     <ListView
-        android:id="@+id/history_list"
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/editText1" >

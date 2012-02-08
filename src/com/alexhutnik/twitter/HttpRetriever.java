@@ -1,7 +1,6 @@
 package com.alexhutnik.twitter;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -9,10 +8,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
 
 public class HttpRetriever {
 
@@ -28,7 +23,7 @@ public class HttpRetriever {
 			final int statusCode = getResponse.getStatusLine().getStatusCode();
 
 			if (statusCode != HttpStatus.SC_OK) {
-				Log.w(HttpRetriever.class.getSimpleName(), "Error " + statusCode	+ " for URL " + url);
+				//TODO add exception handling with a Toast
 			} else {
 
 				HttpEntity getResponseEntity = getResponse.getEntity();
@@ -40,7 +35,7 @@ public class HttpRetriever {
 
 		} catch (IOException e) {
 			getRequest.abort();
-			Log.w(HttpRetriever.class.getSimpleName(), "Error for URL " + url, e);
+			//TODO Add Exception handling with a Toast
 		}
 
 		return result;

@@ -3,7 +3,6 @@ package com.alexhutnik.twitter;
 import java.util.ArrayList;
 
 import android.app.ListActivity;
-import android.graphics.Movie;
 import android.os.Bundle;
 
 public class SearchResultsActivity extends ListActivity {
