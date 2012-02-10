@@ -38,9 +38,11 @@ public class SQLConstants {
 		public static final String CREATE_TWEETXSEARCH = String.format("create table %s " +
 													   "(%s integer primary key autoincrement," +
 													   "%s integer not null," +
-													   "%s integer not null);",
+													   "%s integer not null, UNIQUE(%s,%s));",
 													   SQLConstants.TABLES.TWEETSXSEARCH,
 													   SQLConstants.COLUMNS.ID,
+													   SQLConstants.COLUMNS.SEARCH_ID,
+													   SQLConstants.COLUMNS.TWEET_ID,
 													   SQLConstants.COLUMNS.SEARCH_ID,
 													   SQLConstants.COLUMNS.TWEET_ID);
 	}

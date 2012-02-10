@@ -1,7 +1,5 @@
 package com.alexhutnik.twitter;
 
-import java.io.IOException;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -12,10 +10,11 @@ import org.apache.http.util.EntityUtils;
 public class HttpRetriever {
 
 	private static DefaultHttpClient client = new DefaultHttpClient();
+	private static final String TWITTER_ENDPOINT = "http://search.twitter.com/search.json?q=";
 
-	public static String retrieve(String url) {
+	public static String retrieve(final String term) throws Exception {
 		String result = null;
-		HttpGet getRequest = new HttpGet(url);
+		HttpGet getRequest = new HttpGet(TWITTER_ENDPOINT+term);
 
 		try {
 
@@ -23,7 +22,7 @@ public class HttpRetriever {
 			final int statusCode = getResponse.getStatusLine().getStatusCode();
 
 			if (statusCode != HttpStatus.SC_OK) {
-				//TODO add exception handling with a Toast
+				throw new Exception();
 			} else {
 
 				HttpEntity getResponseEntity = getResponse.getEntity();
@@ -33,9 +32,9 @@ public class HttpRetriever {
 				}
 			}
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			getRequest.abort();
-			//TODO Add Exception handling with a Toast
+			throw e;
 		}
 
 		return result;

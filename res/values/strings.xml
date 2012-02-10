@@ -3,5 +3,6 @@
 
     <string name="app_name">TwitterClient</string>
     <string name="go">Go!</string>
+    <string name="refresh">Refresh</string>
 
 </resources>

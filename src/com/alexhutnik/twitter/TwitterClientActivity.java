@@ -1,7 +1,5 @@
 package com.alexhutnik.twitter;
 
-import java.util.ArrayList;
-
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -17,91 +15,99 @@ import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 public class TwitterClientActivity extends ListActivity {
 	private ProgressDialog progressDialog;
 	private EditText searchEditText;
 	private Cursor searchHistory;
-	private ListView historyListView;
 	private CursorAdapter searchHistoryAdapter;
 	private TwitterClientDAO dao;
-	
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
-		//DB setup
+
+		// DB setup
 		dao = new TwitterClientDAO(this);
 		dao.open();
-		
-		//History management
+
+		// History management
 		searchHistory = dao.getSearchHistory();
 		startManagingCursor(searchHistory);
-		searchHistoryAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, searchHistory, new String[] {SQLConstants.COLUMNS.SEARCH_TEXT}, new int[] {android.R.id.text1});
+		searchHistoryAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, searchHistory,
+				new String[] { SQLConstants.COLUMNS.SEARCH_TEXT }, new int[] { android.R.id.text1 });
 		this.setListAdapter(searchHistoryAdapter);
-	    
-	    searchEditText = (EditText) findViewById(R.id.editText1);
-	    
+
+		searchEditText = (EditText) findViewById(R.id.editText1);
+
 		Button button = (Button) findViewById(R.id.button1);
 		button.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				long searchId = dao.addSearch(searchEditText.getText().toString());
-				searchHistoryAdapter.changeCursor(dao.getSearchHistory());
-				progressDialog = ProgressDialog.show(TwitterClientActivity.this, "Please wait...", "Retrieving data...", true, true);
-				ExecuteHTTPTwitterSearch task = new ExecuteHTTPTwitterSearch();
-				task.executeWithSearchId(searchEditText.getText().toString(),searchId);
-		    	progressDialog.setOnCancelListener(new CancelTaskOnCancelListener(task));
-		    	searchEditText.setText("");
+				String searchTerm = searchEditText.getText().toString();
+				if (!searchTerm.isEmpty()) {
+					long searchId = dao.addSearch(searchTerm);
+					searchHistoryAdapter.changeCursor(dao.getSearchHistory());
+					progressDialog = ProgressDialog.show(TwitterClientActivity.this, "Please wait...", "Retrieving data...", true, true);
+					ExecuteHTTPTwitterSearch task = new ExecuteHTTPTwitterSearch();
+					task.executeWithSearchId(searchTerm, String.valueOf(searchId));
+					progressDialog.setOnCancelListener(new CancelTaskOnCancelListener(task));
+					searchEditText.setText("");
+				} else {
+					Toast.makeText(getApplicationContext(), "You should enter something to search for!", Toast.LENGTH_SHORT).show();
+				}
 			}
 		});
-	} 
-    
+	}
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		progressDialog = ProgressDialog.show(TwitterClientActivity.this, "Please wait...", "Retrieving data...", true, true);
-		ExecuteDBTwitterSearch task = new ExecuteDBTwitterSearch();
-		task.execute(String.valueOf(id));
-    	progressDialog.setOnCancelListener(new CancelTaskOnCancelListener(task));
+		launchSearchResults(String.valueOf(id));
 	};
-	
-	private class ExecuteHTTPTwitterSearch extends	AsyncTask<String, Void, ArrayList<Tweet>> {
-		long _searchId;
+
+	private class ExecuteHTTPTwitterSearch extends AsyncTask<String, Void, Boolean> {
+		String _searchId;
 
 		@Override
-		protected ArrayList<Tweet> doInBackground(String... params) {
-			String term = params[0];		
-			String jsonString = HttpRetriever.retrieve("http://search.twitter.com/search.json?q="+term);
-			return TweetProcessor.processSearchResults(jsonString, dao, _searchId);
+		protected Boolean doInBackground(String... params) {
+			try{
+				String term = params[0];
+				String jsonString = HttpRetriever.retrieve(term);
+				TweetProcessor.processSearchResults(jsonString, dao, _searchId);
+			} catch (Exception e){
+				return false;
+			}
+			return true;
 		}
 
-		protected void onPostExecute(final ArrayList<Tweet> tweetList) {
-			launchSearchResultsWithTweets(tweetList);
+		protected void onPostExecute(Boolean success) {
+			if(success){
+				launchSearchResults(String.valueOf(_searchId));
+			} else {
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (progressDialog != null) {
+							progressDialog.dismiss();
+							progressDialog = null;
+						}	
+						Toast.makeText(getApplicationContext(), "There was an error processing your request", Toast.LENGTH_SHORT).show();	
+					}
+				});
+			}
 		}
-		
-		public void executeWithSearchId(String searchText, long searchId){
+
+		public void executeWithSearchId(String searchText, String searchId) {
 			_searchId = searchId;
 			this.execute(searchText);
 		}
 	}
-	
-	private class ExecuteDBTwitterSearch extends AsyncTask<String, Void, ArrayList<Tweet>> {
 
-		@Override
-		protected ArrayList<Tweet> doInBackground(String... params) {
-			String id = params[0];
-			return dao.getTweetsBySearchId(id);
-		}
-
-		protected void onPostExecute(final ArrayList<Tweet> tweetList) {
-			launchSearchResultsWithTweets(tweetList);
-		}
-	}
-	
-	private void launchSearchResultsWithTweets(final ArrayList<Tweet> tweetList){
+	private void launchSearchResults(final String searchId) {
 		runOnUiThread(new Runnable() {
+
 			@Override
 			public void run() {
 
@@ -109,15 +115,14 @@ public class TwitterClientActivity extends ListActivity {
 					progressDialog.dismiss();
 					progressDialog = null;
 				}
-				
-				Intent intent = new Intent(TwitterClientActivity.this,	SearchResultsActivity.class);
-				intent.putExtra("tweets", tweetList);
+
+				Intent intent = new Intent(TwitterClientActivity.this, SearchResultsActivity.class);
+				intent.putExtra("searchId", searchId);
 				startActivity(intent);
 			}
 		});
 	}
 
-	
 	private class CancelTaskOnCancelListener implements OnCancelListener {
 		private AsyncTask<?, ?, ?> task;
 
@@ -132,14 +137,14 @@ public class TwitterClientActivity extends ListActivity {
 			}
 		}
 	}
-	
-	protected void onResume(){
+
+	protected void onResume() {
 		super.onResume();
 		dao.open();
 		searchHistoryAdapter.changeCursor(dao.getSearchHistory());
 	}
-	
-	protected void onPause(){
+
+	protected void onPause() {
 		super.onPause();
 		dao.close();
 	}
