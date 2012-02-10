@@ -4,5 +4,9 @@
     <string name="app_name">TwitterClient</string>
     <string name="go">Go!</string>
     <string name="refresh">Refresh</string>
+    <string name="empty_search">You should enter something to search for!</string>
+    <string name="generic_error">There was an error processing your request.</string>
+    <string name="please_wait">Please wait...</string>
+    <string name="retrieving_data">Retrieving data...</string>
 
 </resources>

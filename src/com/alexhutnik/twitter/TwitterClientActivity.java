@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,13 +24,14 @@ public class TwitterClientActivity extends ListActivity {
 	private Cursor searchHistory;
 	private CursorAdapter searchHistoryAdapter;
 	private TwitterClientDAO dao;
+	private Resources res;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-
+		res = getResources();
 		// DB setup
 		dao = new TwitterClientDAO(this);
 		dao.open();
@@ -50,13 +52,13 @@ public class TwitterClientActivity extends ListActivity {
 				if (!searchTerm.isEmpty()) {
 					long searchId = dao.addSearch(searchTerm);
 					searchHistoryAdapter.changeCursor(dao.getSearchHistory());
-					progressDialog = ProgressDialog.show(TwitterClientActivity.this, "Please wait...", "Retrieving data...", true, true);
+					progressDialog = ProgressDialog.show(TwitterClientActivity.this, res.getString(R.string.please_wait), res.getString(R.string.retrieving_data), true, true);
 					ExecuteHTTPTwitterSearch task = new ExecuteHTTPTwitterSearch();
 					task.executeWithSearchId(searchTerm, String.valueOf(searchId));
 					progressDialog.setOnCancelListener(new CancelTaskOnCancelListener(task));
 					searchEditText.setText("");
 				} else {
-					Toast.makeText(getApplicationContext(), "You should enter something to search for!", Toast.LENGTH_SHORT).show();
+					Toast.makeText(getApplicationContext(), res.getText(R.string.empty_search), Toast.LENGTH_SHORT).show();
 				}
 			}
 		});
@@ -93,7 +95,7 @@ public class TwitterClientActivity extends ListActivity {
 							progressDialog.dismiss();
 							progressDialog = null;
 						}	
-						Toast.makeText(getApplicationContext(), "There was an error processing your request", Toast.LENGTH_SHORT).show();	
+						Toast.makeText(getApplicationContext(), res.getString(R.string.generic_error), Toast.LENGTH_SHORT).show();	
 					}
 				});
 			}

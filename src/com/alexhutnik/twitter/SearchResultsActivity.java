@@ -4,6 +4,7 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -20,11 +21,14 @@ public class SearchResultsActivity extends ListActivity {
 	private Cursor tweetCursor;
 	private String _searchId;
 	private TwitterClientDAO dao;
+	private Resources res;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.results);
+		
+		res = getResources();
 		
 		dao = new TwitterClientDAO(this);
 		dao.open();
@@ -56,7 +60,7 @@ public class SearchResultsActivity extends ListActivity {
 	}
 	
 	private void refreshTweets(){
-		progressDialog = ProgressDialog.show(SearchResultsActivity.this, "Please wait...", "Retrieving data...", true, true);
+		progressDialog = ProgressDialog.show(SearchResultsActivity.this, res.getString(R.string.please_wait), res.getString(R.string.retrieving_data), true, true);
 		ExecuteTweetRefresh task = new ExecuteTweetRefresh();
 		task.execute(_searchId);
     	progressDialog.setOnCancelListener(new CancelTaskOnCancelListener(task));
@@ -92,7 +96,7 @@ public class SearchResultsActivity extends ListActivity {
 					}
 				});
 			} else {
-				Toast.makeText(getApplicationContext(), "There was an error processing your request", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplicationContext(), res.getString(R.string.generic_error), Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
